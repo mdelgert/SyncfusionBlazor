@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Syncfusion.Blazor.Buttons" Version="28.2.5" />
     <PackageReference Include="Syncfusion.Blazor.Core" Version="28.2.5" />
+    <PackageReference Include="Syncfusion.Blazor.Navigations" Version="28.2.5" />
     <PackageReference Include="Syncfusion.Blazor.Themes" Version="28.2.5" />
   </ItemGroup>
 

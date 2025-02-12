@@ -1,11 +1,19 @@
 ﻿@page "/"
-@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Navigations
 @using Syncfusion.Blazor.Buttons
 
-<PageTitle>Home</PageTitle>
+<SfToolbar CssClass="e-dark">
+    <ToolbarItems>
+        <ToolbarItem Text="Home" CssClass="nav-item"></ToolbarItem>
+        <ToolbarItem Text="Counter" CssClass="nav-item"></ToolbarItem>
+        <ToolbarItem Text="Weather" CssClass="nav-item"></ToolbarItem>
+    </ToolbarItems>
+</SfToolbar>
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-
-<SfButton>Button</SfButton>
+<div class="main-layout">
+    <div class="content">
+        <h1>Dark Theme Template with Syncfusion</h1>
+        <p>Welcome to the dark-themed layout template using Syncfusion Blazor components!</p>
+        <SfButton CssClass="e-primary">Get Started</SfButton>
+    </div>
+</div>
