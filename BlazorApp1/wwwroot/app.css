@@ -1,29 +1,46 @@
-/* Body and Main Layout Background */
 body {
-    background: #1e1e1e; /* Dark Background */
-    color: white; /* Light Text for Dark Background */
+    background: #1e1e1e;
+    color: white;
     margin: 0;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .main-layout {
-    background: #1e1e1e; /* Dark Background (Fallback for Containers) */
-    color: white; /* Light text within the layout */
-    min-height: 100vh; /* Full viewport height */
+    background: #1e1e1e;
+    color: white;
     display: flex;
-    flex-direction: column; /* Stacks elements vertically */
+    flex-direction: column;
+    padding: 20px;
 }
 
-/* Global heading and paragraph styling (optional) */
-h1, h2, h3, h4, h5, h6 {
-    color: #00bcd4; /* Highlight headings with Syncfusion's teal color */
+.content h1, h2, h3, h4, h5, h6 {
+    color: white;
+    padding-top: 1.1rem;
 }
 
 p {
-    color: #c5c6c7; /* Lighter gray color for paragraphs */
+    color: #c5c6c7;
 }
 
-/* Toolbar customizations */
+/* Style Syncfusion Toolbar */
+.e-toolbar.e-dark {
+    background-color: black !important;
+    border-bottom: 1px solid #333; /* Optional border */
+}
+
+.e-toolbar .nav-item {
+    color: white !important;
+}
+
+.e-toolbar .nav-item:hover {
+    color: #00bcd4 !important;
+}
+
+.e-toolbar .e-toolbar-item {
+    color: white !important;
+}
+
+/*
 .app-logo {
     color: white;
     font-weight: bold;
@@ -40,13 +57,10 @@ p {
 }
 
 .nav-item:hover {
-    color: #00bcd4; /* Highlight color on hover */
+    color: #00bcd4;
 }
 
 .nav-user-action {
-    margin-left: auto; /* Push to the right */
+    margin-left: auto;
 }
-
-.content h1 {
-    color: #00bcd4; /* Syncfusion teal color for headings */
-}
+*/
