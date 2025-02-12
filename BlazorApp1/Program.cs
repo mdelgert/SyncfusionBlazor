@@ -1,4 +1,5 @@
 using BlazorApp1.Components;
+using Syncfusion.Blazor;
 
 namespace BlazorApp1
 {
@@ -11,6 +12,8 @@ namespace BlazorApp1
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            builder.Services.AddSyncfusionBlazor();
 
             var app = builder.Build();
 
