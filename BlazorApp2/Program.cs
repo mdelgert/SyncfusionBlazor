@@ -1,4 +1,4 @@
-using BlazorApp2.Components;
+﻿using BlazorApp2.Components;
 
 namespace BlazorApp2
 {

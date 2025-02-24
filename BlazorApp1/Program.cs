@@ -1,4 +1,4 @@
-using BlazorApp1.Components;
+﻿using BlazorApp1.Components;
 using Syncfusion.Blazor;
 
 namespace BlazorApp1

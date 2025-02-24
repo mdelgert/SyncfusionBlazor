@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp1", "BlazorApp1\Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp2", "BlazorApp2\BlazorApp2.csproj", "{FB415885-3A82-4FA4-B6A8-24350C714948}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncfusionBlazorApp1", "SyncfusionBlazorApp1\SyncfusionBlazorApp1.csproj", "{8911EAEB-C507-4317-8860-2C0E9F35EEBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{FB415885-3A82-4FA4-B6A8-24350C714948}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB415885-3A82-4FA4-B6A8-24350C714948}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB415885-3A82-4FA4-B6A8-24350C714948}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8911EAEB-C507-4317-8860-2C0E9F35EEBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8911EAEB-C507-4317-8860-2C0E9F35EEBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8911EAEB-C507-4317-8860-2C0E9F35EEBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8911EAEB-C507-4317-8860-2C0E9F35EEBD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
