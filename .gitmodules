@@ -1,0 +1,3 @@
+[submodule "blazor-samples"]
+	path = blazor-samples
+	url = https://github.com/syncfusion/blazor-samples.git
