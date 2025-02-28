@@ -1,4 +1,4 @@
-# SyncfusionBlazor1
+# SyncfusionBlazor
 
 git clone --recursive git@github.com:mdelgert/SyncfusionBlazor.git
 
