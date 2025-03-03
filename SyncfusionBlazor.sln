@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp1", "BlazorApp1\BlazorApp1.csproj", "{02911298-0B7C-4FBD-AD4A-8E2C4CB748F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncfusionBlazorApp1", "SyncfusionBlazorApp1\SyncfusionBlazorApp1.csproj", "{21B2220B-44F4-4259-97C7-4EADA3E10818}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{02911298-0B7C-4FBD-AD4A-8E2C4CB748F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02911298-0B7C-4FBD-AD4A-8E2C4CB748F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02911298-0B7C-4FBD-AD4A-8E2C4CB748F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02911298-0B7C-4FBD-AD4A-8E2C4CB748F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21B2220B-44F4-4259-97C7-4EADA3E10818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21B2220B-44F4-4259-97C7-4EADA3E10818}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21B2220B-44F4-4259-97C7-4EADA3E10818}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21B2220B-44F4-4259-97C7-4EADA3E10818}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection

@@ -1,7 +1,4 @@
 # SyncfusionBlazor
 
-git clone --recursive git@github.com:mdelgert/SyncfusionBlazor.git
-
+https://www.syncfusion.com/forums/177811/storing-licensing-key-best-practices
 https://github.com/syncfusion/blazor-samples
-
-git submodule add https://github.com/syncfusion/blazor-samples.git
