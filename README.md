@@ -61,8 +61,3 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 ## Acknowledgements
 
 - [Syncfusion](https://www.syncfusion.com/) for providing the components used in these applications.
-
-## LInks
-
-- [storing licensing key](https://www.syncfusion.com/forums/177811/storing-licensing-key-best-practices)
-- [blazor samples](https://github.com/syncfusion/blazor-samples)
