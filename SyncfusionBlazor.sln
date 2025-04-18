@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncfusionBlazorApp2", "Syn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncfusionBlazorApp3", "SyncfusionBlazorApp3\SyncfusionBlazorApp3.csproj", "{9F7D43F8-7F49-42C8-9396-352A1A006174}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncfusionBlazorApp4", "SyncfusionBlazorApp4\SyncfusionBlazorApp4.csproj", "{104F5485-D422-4E05-806E-741AF8BD8E2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{9F7D43F8-7F49-42C8-9396-352A1A006174}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F7D43F8-7F49-42C8-9396-352A1A006174}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F7D43F8-7F49-42C8-9396-352A1A006174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{104F5485-D422-4E05-806E-741AF8BD8E2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{104F5485-D422-4E05-806E-741AF8BD8E2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{104F5485-D422-4E05-806E-741AF8BD8E2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{104F5485-D422-4E05-806E-741AF8BD8E2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
