@@ -1,91 +1,458 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@using Syncfusion.Blazor.Diagram
+@using System.Collections.ObjectModel
+@using Syncfusion.Blazor.Diagram.SymbolPalette
+@using Syncfusion.Blazor.Navigations
+@using DiagramShapes = Syncfusion.Blazor.Diagram.NodeShapes
+@using DiagramSegments = Syncfusion.Blazor.Diagram.ConnectorSegment
+@using Orientation= Syncfusion.Blazor.Diagram.Orientation
 
-<PageTitle>Index</PageTitle>
-
-<span class="pageheader">Selected Controls</span>
+<PageTitle>Diagram</PageTitle>
+<h2>Diagram</h2>
 <br />
-<p class="pagecontent">The following Syncfusion Blazor components can be set up in an application for you with the Syncfusion Blazor Template Studio. A fast, easy start with Syncfusion Blazor components lets you concentrate on the important part: learning.</p>
-<div class="controlregion">
-
- <h5 class="productheader"> Data Visualization</h5>
-<ul class="ulstyle">
-	<li class="list">
- 	<NavLink class="nav-link" href="diagram-features">
- 	<span class="syncfusion-blazor-index-icons syncfusion-blazor-icon-diagram" aria-hidden="true"></span>Diagram
- 	</NavLink>
- 	</li>
-
-</ul>
- <h5 class="productheader"> Buttons</h5>
-<ul class="ulstyle">
-	<li class="list">
- 	<NavLink class="nav-link" href="button-features">
- 	<span class="syncfusion-blazor-index-icons syncfusion-blazor-icon-button" aria-hidden="true"></span>Button
- 	</NavLink>
- 	</li>
-	<li class="list">
- 	<NavLink class="nav-link" href="dropdownmenu-features">
- 	<span class="syncfusion-blazor-index-icons syncfusion-blazor-icon-dropdownmenu" aria-hidden="true"></span>Dropdown Menu
- 	</NavLink>
- 	</li>
-
-</ul>
-
+<div style="width: 100%">
+    <div style="width:240px;height:100%;float:left;">
+        <SfSymbolPaletteComponent @ref="@PaletteInstance" Height="700px" Palettes="@palettes" SymbolHeight="60" SymbolWidth="60" SymbolMargin="@SymbolMargin">
+        </SfSymbolPaletteComponent>
+    </div>
+    <div style="width:calc(100% - 242px);height:100%;float:left;">
+        <SfDiagramComponent @ref="@Diagram" Connectors="@connectors" Created="OnCreated" SelectionChanged="@OnSelectionChanged" Height="687px"
+                            GetCustomTool="@GetCustomTool" Nodes="@nodes"
+                            SelectionSettings="@selectionSettings" NodeCreating="OnNodeCreating" ConnectorCreating="OnConnectorCreating">
+            <SnapSettings>
+                <HorizontalGridLines LineColor="#e0e0e0 " LineIntervals="@GridLineIntervals">
+                </HorizontalGridLines>
+                <VerticalGridLines LineColor="#e0e0e0" LineIntervals="@GridLineIntervals">
+                </VerticalGridLines>
+            </SnapSettings>
+            <ContextMenuSettings Show="true"></ContextMenuSettings>
+        </SfDiagramComponent>
+    </div>
 </div>
+
 <style>
     .ulstyle {
-        margin-top: 10px;
-        margin-bottom: 20px;
+        margin: 0px;
+        padding-left: 20px;
         display: inline-block;
-        list-style-type: none !important;
-        padding-left: 0px !important;
     }
-
-    .controlregion {
-        margin-top: 50px;
-    }
-
-    .pagecontent {
-        font-family: sans-serif !important;
-font-size: 16px;
-color: #333333;
-letter-spacing: 0.34px;
-line-height: 24px;
-margin-top: 10px;
-    }
-    
 
     .list {
         float: left;
-        line-height: 40px;
-        min-width: 280px;
-        font-family: sans-serif !important;
-        font-size: 19px;
-        color: #0073DC;
-    }
-
-    .syncfusion-blazor-index-icons {
-        font-family: "sbicons";
-        color: #0073DC !important;
-        font-style: normal;
-        font-weight: normal;
-        font-variant: normal;
-        text-transform: none;
-        padding-right: 13px;
-        font-size: 18px;
-    }
-
-    .productheader {
-        font-family: sans-serif !important;
-        font-size: 19px !important;
-        color: #333333 !important;
-        letter-spacing: 0.41px ;
-    }
-
-    .pageheader {
-        font-family: sans-serif !important;
-        font-size: 24px !important;
-        color: #333333 ;
-        font-weight: bold !important;
+        line-height: 20px;
+        margin: 10px;
+        min-width: 340px;
     }
 </style>
+
+@functions
+{
+    private int connectorCount = 0;
+    DiagramSelectionSettings selectionSettings = new DiagramSelectionSettings();
+    public DiagramSize? SymbolPreview;
+    public SymbolMargin? SymbolMargin = new SymbolMargin { Left = 15, Right = 15, Top = 15, Bottom = 15 };
+    public SfDiagramComponent? Diagram;
+    public SfSymbolPaletteComponent? PaletteInstance;
+    DiagramObjectCollection<UserHandle> handles = new DiagramObjectCollection<UserHandle>();
+    //Defines Diagram's nodes collection
+    private DiagramObjectCollection<Node>? nodes = new DiagramObjectCollection<Node>();
+    //Defines Diagram's connectors collection
+    private DiagramObjectCollection<Connector>? connectors = new DiagramObjectCollection<Connector>();
+    //Define palettes collection
+    private DiagramObjectCollection<Palette>? palettes = new DiagramObjectCollection<Palette>();
+    // Defines palette's flow-shape collection
+    private DiagramObjectCollection<NodeBase>? flowShapeSymbols = new DiagramObjectCollection<NodeBase>();
+    // Defines interval values for GridLines
+    public double[]? GridLineIntervals { get; set; }
+    // Defines palette's connector collection
+    private DiagramObjectCollection<NodeBase>? connectorSymbols = new DiagramObjectCollection<NodeBase>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            UpdateHandle();
+        }
+        PaletteInstance!.Targets = new DiagramObjectCollection<SfDiagramComponent>
+        {
+            Diagram!
+        };
+    }
+    
+    private void OnSelectionChanged(Syncfusion.Blazor.Diagram.SelectionChangedEventArgs args)
+    {
+        if (args.NewValue.Count > 0 && args.NewValue[0] is Node)
+        {
+            Diagram!.SelectionSettings.Constraints = Diagram.SelectionSettings.Constraints | SelectorConstraints.UserHandle;
+        }
+        else if (args.NewValue.Count > 0)
+        {
+            Diagram!.SelectionSettings.Constraints = Diagram.SelectionSettings.Constraints & ~SelectorConstraints.UserHandle;
+        }
+    }
+
+    private void OnCreated()
+    {
+        Diagram!.Select(new ObservableCollection<IDiagramObject>() { Diagram.Nodes[0] });
+    }
+    
+    // Method to customize the tool
+    public InteractionControllerBase GetCustomTool(DiagramElementAction action, string id)
+    {
+        InteractionControllerBase? tool = null;
+        if (id == "Draw")
+        {
+            tool = new DrawTool(Diagram!);
+        }
+        else
+        {
+            tool = new AddDeleteTool(Diagram!);
+        }
+        return tool;
+    }
+    
+    // Custom tool to delete the node.
+    public class AddDeleteTool : DragController
+    {
+        SfDiagramComponent sfDiagram;
+        Node? deleteObject = null;
+        public AddDeleteTool(SfDiagramComponent Diagram) : base(Diagram)
+        {
+            sfDiagram = Diagram;
+        }
+        public override void OnMouseDown(DiagramMouseEventArgs args)
+        {
+            if (sfDiagram.SelectionSettings.Nodes.Count > 0 && ((sfDiagram.SelectionSettings.Nodes[0]) is Node))
+            {
+                deleteObject = (sfDiagram.SelectionSettings.Nodes[0]) as Node;
+            }
+            base.OnMouseDown(args);
+        }
+        public override void OnMouseUp(DiagramMouseEventArgs args)
+        {
+            if (deleteObject != null)
+            {
+                sfDiagram.BeginUpdate();
+                sfDiagram.Nodes.Remove(deleteObject);
+                _ = sfDiagram.EndUpdate();
+            }
+            base.OnMouseUp(args);
+            this.InAction = true;
+        }
+    }
+
+    public class DrawTool : ConnectorDrawingController
+    {
+        SfDiagramComponent sfDiagram;
+        Connector? newConnector = null;
+        public DrawTool(SfDiagramComponent Diagram) : base(Diagram, DiagramElementAction.ConnectorSourceEnd)
+        {
+            sfDiagram = Diagram;
+            newConnector = new Connector()
+                {
+                    ID = "OrthogonalConnector",
+                    SourceID = sfDiagram.SelectionSettings.Nodes[0].ID,
+                    Type = ConnectorSegmentType.Orthogonal,
+                };
+#pragma warning disable BL0005
+            Diagram.InteractionController = DiagramInteractions.DrawOnce;
+            Diagram.DrawingObject = newConnector;
+#pragma warning restore BL0005
+        }
+        public override void OnMouseDown(DiagramMouseEventArgs args)
+        {
+            base.OnMouseDown(args);
+        }
+        public override void OnMouseUp(DiagramMouseEventArgs args)
+        {
+            base.OnMouseUp(args);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        GridLineIntervals = new double[] {
+            1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75
+    };
+        InitDiagramModel();
+        InitPaletteModel();
+    }
+
+    // Create Nodes and Connectors for the diagram.
+    private void InitDiagramModel()
+    {
+        CreateNode("node1", 150, 150, NodeFlowShapes.Process, "Node1");
+        CreateNode("node2", 150, 300, NodeFlowShapes.Process, "Node2");
+        CreateConnector("node1", "node2");
+    }
+
+    // Create Nodes and Connectors for the Palette.
+    private void InitPaletteModel()
+    {
+        palettes = new DiagramObjectCollection<Palette>();
+        SymbolPreview = new DiagramSize
+            {
+                Width = 100,
+                Height = 100
+            };
+        flowShapeSymbols = new DiagramObjectCollection<NodeBase>();
+        CreatePaletteNode(NodeFlowShapes.Process, "Process");
+        connectorSymbols = new DiagramObjectCollection<NodeBase>();
+        CreatePaletteConnector("StraightWithArrow", ConnectorSegmentType.Straight, DecoratorShape.Arrow);
+        palettes = new DiagramObjectCollection<Palette>()
+        {
+            #pragma warning disable BL0005
+            new Palette() {Symbols = flowShapeSymbols, Title = "Flow Shapes", ID = "Flow Shapes", IconCss = "e-ddb-icons e-flow"},
+            new Palette() {Symbols = connectorSymbols, Title = "Connectors", IsExpanded = true, IconCss = "e-ddb-icons e-connector"},
+            #pragma warning restore BL0005
+        };
+    }
+
+    private void OnNodeCreating(IDiagramObject obj)
+    {
+        Node? node = obj as Node;
+        node!.Style.Fill = "#357BD2";
+        if (!(node.ID.StartsWith("Annotation") || node.ID.StartsWith("Sequential Data")))
+            node.Style.StrokeColor = "White";
+        node.Style.Opacity = 1;
+    }
+
+    private void OnConnectorCreating(IDiagramObject obj)
+    {
+        Connector? node = obj as Connector;
+        node!.Style.Fill = "black";
+        node.Style.StrokeColor = "black";
+        node.Style.Opacity = 1;
+        node.TargetDecorator.Style.Fill = "black";
+        node.TargetDecorator.Style.StrokeColor = "black";
+    }
+
+    // Method is used to create a node for the palette.
+    private void CreatePaletteNode(NodeFlowShapes flowShape, string id)
+    {
+        Node diagramNode = new Node()
+            {
+                ID = id,
+                Shape = new FlowShape() { Type = Syncfusion.Blazor.Diagram.NodeShapes.Flow, Shape = flowShape },
+                Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1 },
+            };
+        diagramNode.Width = 80;
+        diagramNode.Height = 40;
+        double oldWidth = Convert.ToDouble(diagramNode.Width);
+        double oldHeight = Convert.ToDouble(diagramNode.Height);
+        double ratio = 100 / oldWidth;
+        diagramNode.Width = 100;
+        diagramNode.Height *= ratio;
+        flowShapeSymbols!.Add(diagramNode);
+    }
+
+    // used to create a Port.
+    private DiagramObjectCollection<PointPort> CreatePort()
+    {
+        DiagramObjectCollection<PointPort> defaultsPorts = new DiagramObjectCollection<PointPort>();
+        PointPort port1 = new PointPort()
+            {
+                ID = "port1",
+                Shape = PortShapes.Circle,
+                Offset = new DiagramPoint() { X = 0, Y = 0.5 }
+            };
+        PointPort port2 = new PointPort()
+            {
+                ID = "port2",
+                Shape = PortShapes.Circle,
+                Offset = new DiagramPoint() { X = 0.5, Y = 0 }
+            };
+        PointPort port3 = new PointPort()
+            {
+                ID = "port3",
+                Shape = PortShapes.Circle,
+                Offset = new DiagramPoint() { X = 1, Y = 0.5 }
+            };
+        PointPort port4 = new PointPort()
+            {
+                ID = "port4",
+                Shape = PortShapes.Circle,
+                Offset = new DiagramPoint() { X = 0.5, Y = 1 }
+            };
+        defaultsPorts.Add(port1);
+        defaultsPorts.Add(port2);
+        defaultsPorts.Add(port3);
+        defaultsPorts.Add(port4);
+        return defaultsPorts;
+    }
+
+    // Method is used to create a Connector for the diagram.
+    private void CreateConnector(string sourceId, string targetId, string? label = default(string), bool isDashLine = false, string sport = "", string tport = "")
+    {
+        Connector diagramConnector = new Connector()
+            {
+                ID = string.Format("connector{0}", ++connectorCount),
+                SourceID = sourceId,
+                TargetID = targetId,
+                SourcePortID = sport,
+                TargetPortID = tport
+            };
+        if (isDashLine)
+        {
+            diagramConnector.Style = new ShapeStyle() { StrokeDashArray = "2,2" };
+        }
+        if (label != default(string))
+        {
+            var annotation = new PathAnnotation()
+                {
+                    Content = label,
+                    Style = new TextStyle() { Fill = "white" }
+                };
+            if ((sourceId == "node5" && targetId == "node6") || label == "Yes" || label == "No")
+            {
+                annotation.Height = 10;
+                annotation.Width = 15;
+            }
+            diagramConnector.Annotations = new DiagramObjectCollection<PathAnnotation>() { annotation };
+        }
+        diagramConnector.Type = ConnectorSegmentType.Orthogonal;
+        connectors!.Add(diagramConnector);
+    }
+
+    // Method is used to create a node for the diagram.
+    private void CreateNode(string id, double x, double y, NodeFlowShapes shape, string label)
+    {
+        Node diagramNode = new Node()
+            {
+                ID = id,
+                OffsetX = x,
+                OffsetY = y,
+                Width = 145,
+                Ports = CreatePort(),
+                Height = 60,
+                Style = new ShapeStyle { Fill = "#357BD2", StrokeColor = "White" },
+                Shape = new FlowShape() { Type = Syncfusion.Blazor.Diagram.NodeShapes.Flow, Shape = shape },
+                Annotations = new DiagramObjectCollection<ShapeAnnotation>
+            {
+                new ShapeAnnotation
+                {
+                    Content = label,
+                    Style = new TextStyle()
+                    {
+                        Color="White", Fill = "transparent"
+                    }
+                }
+            }
+            };
+        nodes!.Add(diagramNode);
+    }
+
+    // Method is used to create a Connector for the palette.
+    private void CreatePaletteConnector(string id, ConnectorSegmentType type, DecoratorShape decoratorShape)
+    {
+        Connector diagramConnector = new Connector()
+            {
+                ID = id,
+                Type = type,
+                SourcePoint = new DiagramPoint() { X = 0, Y = 0 },
+                TargetPoint = new DiagramPoint() { X = 60, Y = 60 },
+                Style = new ShapeStyle() { StrokeWidth = 1, StrokeColor = "#757575" },
+                TargetDecorator = new DecoratorSettings()
+                {
+                    Shape = decoratorShape,
+                    Style = new ShapeStyle() { StrokeWidth = 1, StrokeColor = "#757575", Fill = "#757575" }
+                }
+            };
+        connectorSymbols!.Add(diagramConnector);
+    }
+
+    private void UpdateHandle()
+    {
+        UserHandle deleteHandle = AddHandle("Delete", "delete", Direction.Bottom, 0.5);
+        UserHandle drawHandle = AddHandle("Draw", "draw", Direction.Right, 0.5);
+        handles.Add(deleteHandle);
+        handles.Add(drawHandle);
+        selectionSettings.UserHandles = handles;
+    }
+
+    private UserHandle AddHandle(string name, string path, Direction direction, double offset)
+    {
+        UserHandle handle = new UserHandle()
+            {
+                Name = name,
+                Visible = true,
+                Offset = offset,
+                Side = direction,
+                Margin = new DiagramThickness() { Top = 0, Bottom = 0, Left = 0, Right = 0 }
+            };
+        if (path == "delete")
+        {
+            handle.PathData = "M0.54700077,2.2130003 L7.2129992,2.2130003 7.2129992,8.8800011 C7.2129992,9.1920013 7.1049975,9.4570007 6.8879985,9.6739998 6.6709994,9.8910007 6.406,10 6.0939997,10 L1.6659999,10 C1.3539997,10 1.0890004,9.8910007 0.87200136,9.6739998 0.65500242,9.4570007 0.54700071,9.1920013 0.54700077,8.8800011 z M2.4999992,0 L5.2600006,0 5.8329986,0.54600048 7.7599996,0.54600048 7.7599996,1.6660004 0,1.6660004 0,0.54600048 1.9270014,0.54600048 z";
+        }
+        else
+        {
+            handle.PathData = "M3.9730001,0 L8.9730001,5.0000007 3.9730001,10.000001 3.9730001,7.0090005 0,7.0090005 0,2.9910006 3.9730001,2.9910006 z";
+        }
+        return handle;
+    }
+
+    @*Hidden:Lines*@
+    public void Dispose()
+    {
+        if (SymbolPreview != null)
+        {
+            SymbolPreview = null;
+        }
+        if (SymbolMargin != null)
+        {
+            SymbolMargin = null;
+        }
+        Diagram = null;
+        PaletteInstance = null;
+        if (nodes != null)
+        {
+            nodes.Clear();
+            nodes = null;
+        }
+        if (connectors != null)
+        {
+            connectors.Clear();
+            connectors = null;
+        }
+#pragma warning disable BL0005
+        if (palettes != null)
+        {
+            for (int i = 0; i < palettes.Count; i++)
+            {
+                palettes[i].ID = null;
+                palettes[i].Title = null;
+                palettes[i].IconCss = null;
+                if (palettes[i].Symbols != null)
+                {
+                    for (int j = 0; j < palettes[i].Symbols.Count; j++)
+                    {
+                        palettes[i].Symbols[j] = null;
+                    }
+                    palettes[i].Symbols.Clear();
+                    palettes[i].Symbols = null;
+                }
+            }
+            palettes.Clear();
+            palettes = null;
+        }
+#pragma warning restore BL0005
+        if (flowShapeSymbols != null)
+        {
+            flowShapeSymbols.Clear();
+            flowShapeSymbols = null;
+        }
+        if (GridLineIntervals != null)
+        {
+            Array.Clear(GridLineIntervals, 0, GridLineIntervals.Length);
+            GridLineIntervals = null;
+        }
+        if (connectorSymbols != null)
+        {
+            connectorSymbols.Clear();
+            connectorSymbols = null;
+        }
+    }
+    @*End:Hidden*@
+}
