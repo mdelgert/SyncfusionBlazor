@@ -87,8 +87,8 @@
     private void clearDiagram()
     {
         message = "Clear Diagram";
-        nodes.Clear();
         swimlanes.Clear();
+        nodes.Clear();
         connectors.Clear();
         //TODO: Clear the diagram
     }
@@ -110,6 +110,8 @@
     {
         message = "Add Connectors";
         //TODO: Add the connectors
+        CreateConnector("node1", "node2");
+        CreateConnector("node2", "node3");
     }
 
     private void removeItem()
@@ -302,7 +304,7 @@
         Logger.LogInformation("Number of swimlanes: {Count}", swimlanes[0].Lanes.Count);
 
         CreateConnector("node1", "node2");
-        //CreateConnector("node2", "node3");
+        CreateConnector("node2", "node3");
     }
     // Create Nodes and Connectors for the Palette.
     private void InitPaletteModel()
@@ -314,12 +316,12 @@
                 Height = 100
             };
         flowShapeSymbols = new DiagramObjectCollection<NodeBase>();
-        CreatePaletteNode(NodeFlowShapes.Terminator, "Terminator");
         CreatePaletteNode(NodeFlowShapes.Process, "Process");
-        CreatePaletteNode(NodeFlowShapes.Decision, "Decision");
-        CreatePaletteNode(NodeFlowShapes.Document, "Document");
-        CreatePaletteNode(NodeFlowShapes.PreDefinedProcess, "Pre-Defined Process");
-        CreatePaletteNode(NodeFlowShapes.Data, "Data");
+        //CreatePaletteNode(NodeFlowShapes.Terminator, "Terminator");
+        //CreatePaletteNode(NodeFlowShapes.Decision, "Decision");
+        //CreatePaletteNode(NodeFlowShapes.Document, "Document");
+        //CreatePaletteNode(NodeFlowShapes.PreDefinedProcess, "Pre-Defined Process");
+        //CreatePaletteNode(NodeFlowShapes.Data, "Data");
         //horizontal lane
         Lane horizontalLane = new Lane()
             {
@@ -359,15 +361,15 @@
         SwimlaneNodes = new DiagramObjectCollection<NodeBase>()
         {
             horizontalLane,
-            verticalLane,
-            horizontalPhase,
-            verticalPhase
+            //verticalLane,
+            //horizontalPhase,
+            //verticalPhase
         };
         connectorSymbols = new DiagramObjectCollection<NodeBase>();
         CreatePaletteConnector("Link1", ConnectorSegmentType.Orthogonal, new DiagramPoint() { X = 40, Y = 40 });
-        CreatePaletteConnector("Link2", ConnectorSegmentType.Orthogonal, new DiagramPoint() { X = 40, Y = 40 }, "4 4");
-        CreatePaletteConnector("Link21", ConnectorSegmentType.Straight, new DiagramPoint() { X = 60, Y = 60 });
-        CreatePaletteConnector("Link22", ConnectorSegmentType.Straight, new DiagramPoint() { X = 60, Y = 60 }, "4 4");
+        //CreatePaletteConnector("Link2", ConnectorSegmentType.Orthogonal, new DiagramPoint() { X = 40, Y = 40 }, "4 4");
+        //CreatePaletteConnector("Link21", ConnectorSegmentType.Straight, new DiagramPoint() { X = 60, Y = 60 });
+        //CreatePaletteConnector("Link22", ConnectorSegmentType.Straight, new DiagramPoint() { X = 60, Y = 60 }, "4 4");
         palettes = new DiagramObjectCollection<Palette>()
         {
             new Palette() {Symbols = flowShapeSymbols, Title = "Flow Shapes", ID = "Flow Shapes"},
@@ -419,6 +421,13 @@
         connector.TargetDecorator.Style.StrokeColor = "#717171";
         connector.SourceDecorator.Style.Fill = "#717171";
         connector.TargetDecorator.Style.Fill = "#717171";
+
+        //var existingConnectors = connectors.Where(x => x.SourceID == connector.SourceID && x.TargetID == connector.TargetID).ToList();
+        //existingConnectors.AddRange(connectors.Where(x => x.SourceID == connector.TargetID && x.TargetID == connector.SourceID).ToList());
+        //if(existingConnectors.Any(x => x.TargetID == connector.TargetID && x.SourceID == x.SourceID && x.ID != connector.ID))
+        //{
+        //    Diagram.Connectors.Remove(Diagram.Connectors.FirstOrDefault(x => x.ID == connector.ID));
+        //}
     }
     // Method is used to create a node for the palette.
     private void CreatePaletteNode(NodeFlowShapes flowShape, string id)
