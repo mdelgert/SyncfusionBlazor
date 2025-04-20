@@ -315,8 +315,8 @@
         //Log the number of lanes using logger
         Logger.LogInformation("Number of swimlanes: {Count}", swimlanes[0].Lanes.Count);
 
-        //CreateConnector("node1", "node2");
-        //CreateConnector("node3", "node4");
+        CreateConnector("node1", "node2");
+        CreateConnector("node3", "node4");
     }
     // Create Nodes and Connectors for the Palette.
     private void InitPaletteModel()
@@ -548,11 +548,13 @@
         Connector diagramConnector = new Connector()
             {
                 ID = string.Format("connector{0}", ++connectorCount),
+                ZIndex = 40,
                 SourceID = sourceId,
                 TargetID = targetId,
                 SourcePortID = sport,
                 TargetPortID = tport
             };
+
         if (isDashLine)
         {
             diagramConnector.Style = new ShapeStyle() { StrokeDashArray = "2,2" };
