@@ -9,16 +9,16 @@
 <h2>Diagram</h2>
 <div class="parent">
     <div class="btn">
-        <SfButton IsPrimary="true" onclick="clearDiagram">Clear</SfButton>
+        <SfButton IsPrimary="true" OnClick="@clearDiagram">Clear</SfButton>
     </div>
     <div class="btn">
-        <SfButton IsPrimary="true" onclick="reloadDiagram">Reload</SfButton>
+        <SfButton IsPrimary="true" OnClick="@reloadDiagram">Reload</SfButton>
     </div>
     <div class="btn">
-        <SfButton IsPrimary="true" onclick="addNodes">Nodes</SfButton>
+        <SfButton IsPrimary="true" OnClick="@addNodes">Nodes</SfButton>
     </div>
     <div class="btn">
-        <SfButton IsPrimary="true" onclick="addConnectors">Connectors</SfButton>
+        <SfButton IsPrimary="true" OnClick="@addConnectors">Connectors</SfButton>
     </div>
     <br />
     <p class="pagecontent">@message</p>
@@ -88,12 +88,16 @@
     private void clearDiagram()
     {
         message = "Clear Diagram";
+        nodes.Clear();
+        swimlanes.Clear();
+        connectors.Clear();
         //TODO: Clear the diagram
     }
 
     private void reloadDiagram()
     {
         message = "Reload Diagram";
+        InitDiagramModel();
         //TODO: Reload the diagram
     }
 
