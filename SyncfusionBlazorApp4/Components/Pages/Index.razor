@@ -15,6 +15,9 @@
         <SfButton IsPrimary="true" OnClick="@saveDiagram">Save</SfButton>
     </div>
     <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@loadDiagram">Load</SfButton>
+    </div>
+    <div class="btn">
         <SfButton IsPrimary="true" OnClick="@addConnectors">Connectors</SfButton>
     </div>
     <div class="btn">
@@ -636,8 +639,27 @@
         diagramString = Diagram.SaveDiagram();
 
         // Show messagebox of the diagram string
-        jsRuntime.InvokeVoidAsync("alert", "Diagram saved successfully! \n\n" + diagramString);
+        //jsRuntime.InvokeVoidAsync("alert", "Diagram saved successfully! \n\n" + diagramString);
         Logger.LogInformation("Diagram saved successfully: {DiagramString}", diagramString);
+    }
+
+    private void loadDiagram()
+    {
+        message = "Load Diagram";
+        // Load the diagram from the saved string
+        if (!string.IsNullOrEmpty(diagramString))
+        {
+            //Diagram.LoadDiagram(diagramString);
+            //Diagram.LoadDiagramAsync(diagramString).GetAwaiter().GetResult();
+            Diagram.LoadDiagramAsync(diagramString);
+            //Diagram.RefreshDataSourceAsync();
+            //StateHasChanged(); // Uncomment if you need to refresh the UI immediately
+            //Logger.LogInformation("Diagram loaded successfully: {DiagramString}", diagramString);
+        }
+        else
+        {
+            Logger.LogWarning("No diagram data to load.");
+        }
     }
 
     private void clearDiagram()
