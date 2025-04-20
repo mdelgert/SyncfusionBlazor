@@ -105,8 +105,8 @@
     {
         message = "Reload Diagram";
         InitDiagramModel();
-        Diagram.RefreshDataSourceAsync();
-        StateHasChanged();
+        //Diagram.RefreshDataSourceAsync();
+        //StateHasChanged();
     }
 
     private void addNodes()
@@ -241,6 +241,7 @@
                 Orientation = Orientation.Horizontal,
                 Height = 250,
                 Width = 650,
+                ZIndex = 10,
                 Header = new SwimlaneHeader()
                 {
                     Annotation = new ShapeAnnotation()
@@ -275,6 +276,7 @@
                     new Lane(){
                         ID = "lane1",
                         Height = 115,
+                        ZIndex = 20,
                         Header = new SwimlaneHeader()
                         {
                             Annotation = new ShapeAnnotation(){ Content = "Lane1"}, Width=50,
@@ -285,13 +287,14 @@
                         },
                         Children = new DiagramObjectCollection<Node>()
                         {
-                            new Node(){ ID = "node1", Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node1" } } },
-                            new Node(){ ID = "node2", Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node2" } } }
+                            new Node(){ ID = "node1", ZIndex=30, Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node1" } } },
+                            new Node(){ ID = "node2", ZIndex=30, Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node2" } } }
                         },
                     },
                     new Lane(){
                         ID = "lane2",
                         Height = 115,
+                        ZIndex = 20,
                         Header = new SwimlaneHeader(){
                             Annotation = new ShapeAnnotation(){Content = "Lane2"}, Width=50,
                             Style = new TextStyle()
@@ -301,8 +304,8 @@
                         },
                         Children = new DiagramObjectCollection<Node>()
                         {
-                            new Node(){ ID = "node3", Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node3" } } },
-                            new Node(){ ID = "node4", Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node4" } } }
+                            new Node(){ ID = "node3", ZIndex=30, Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node3" } } },
+                            new Node(){ ID = "node4", ZIndex=30, Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node4" } } }
                         },
                     }
                 }
