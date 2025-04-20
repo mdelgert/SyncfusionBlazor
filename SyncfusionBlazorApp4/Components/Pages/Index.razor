@@ -12,6 +12,9 @@
         <SfButton IsPrimary="true" OnClick="@clearDiagram">Clear</SfButton>
     </div>
     <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@saveDiagram">Save</SfButton>
+    </div>
+    <div class="btn">
         <SfButton IsPrimary="true" OnClick="@addConnectors">Connectors</SfButton>
     </div>
     <div class="btn">
@@ -58,6 +61,7 @@
 
 @code {
     private string message = "";
+    private string diagramString = "";
     private int connectorCount = 0;
     List<ContextMenuItem> ContextMenuItems = new List<ContextMenuItem>();
     SnapConstraints snapConstraints = SnapConstraints.All & ~SnapConstraints.ShowLines;
@@ -626,6 +630,16 @@
         };
     }
 
+    private void saveDiagram()
+    {
+        message = "Save Diagram";
+        diagramString = Diagram.SaveDiagram();
+
+        // Show messagebox of the diagram string
+        jsRuntime.InvokeVoidAsync("alert", "Diagram saved successfully! \n\n" + diagramString);
+        Logger.LogInformation("Diagram saved successfully: {DiagramString}", diagramString);
+    }
+
     private void clearDiagram()
     {
         message = "Clear Diagram";
@@ -636,7 +650,7 @@
         connectors.Clear();
         connectors = new DiagramObjectCollection<Connector>();
         Diagram.RefreshDataSourceAsync();
-
+        
         //Diagram.RefreshDataSource();
         //StateHasChanged();
         //Diagram.RefreshDataSourceAsync().GetAwaiter().GetResult();
