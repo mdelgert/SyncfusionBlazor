@@ -82,9 +82,8 @@
     public double[] GridLineIntervals { get; set; }
     // Defines palette's connector collection
     private DiagramObjectCollection<NodeBase> connectorSymbols = new DiagramObjectCollection<NodeBase>();
-    [Inject]
-    protected IJSRuntime jsRuntime { get; set; }
-
+    [Inject] protected IJSRuntime jsRuntime { get; set; }
+    [Inject] private ILogger<Index> Logger { get; set; } = default!;
     private void clearDiagram()
     {
         message = "Clear Diagram";
@@ -229,13 +228,13 @@
             {
                 ID = "swimlane", OffsetX = 400, OffsetY = 300,
                 Orientation = Orientation.Horizontal,
-                Height = 500,
+                Height = 250,
                 Width = 650,
                 Header = new SwimlaneHeader()
                 {
                     Annotation = new ShapeAnnotation()
                     {
-                        Content = "SALES PROCESS FLOW CHART"
+                        Content = "DEMO"
                     },
                     Height = 50,
                     Style = new TextStyle()
@@ -251,9 +250,11 @@
                         Header = new SwimlaneHeader()
                         {
                             Annotation = new ShapeAnnotation(){
-                                Content = "Phase",
+                                //Content = "Phase",
+                                Content = "",
                             },
-                            Height = 20
+                            //Height = 20
+                            Height = 0
                         },
                         Width = 650,
                     }
@@ -265,7 +266,7 @@
                         Height = 115,
                         Header = new SwimlaneHeader()
                         {
-                            Annotation = new ShapeAnnotation(){ Content = "Consumer"}, Width=50,
+                            Annotation = new ShapeAnnotation(){ Content = "Lane1"}, Width=50,
                             Style = new TextStyle()
                             {
                                   Fill = "#E7F4FF", StrokeColor = "#717171"
@@ -273,18 +274,15 @@
                         },
                         Children = new DiagramObjectCollection<Node>()
                         {
-                            new Node(){ ID = "node1", Height = 60, RotationAngle=0, Width = 130, LaneOffsetX = 130, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Consumer learns of product" } } },
-                            new Node(){ ID = "node2", Height = 90, Width = 160, LaneOffsetX = 320, LaneOffsetY = 55, Ports = CreatePort(), Shape = new FlowShape(){ Shape = NodeFlowShapes.Decision },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Does Consumer \n want the product" } } },
-                            new Node(){ ID = "node3", Height = 60, Width = 130, LaneOffsetX = 520, LaneOffsetY = 65, Ports = CreatePort(),
-                            Shape = new PathShape(){ Data = "M100,20 C100,31.05,91.37,40,80.72,40 L19.28,40 C8.63,40,0,31.05,0,20 L0,20 C0,8.95,8.63,0,19.28,0 L80.72,0 C91.37,0,100,8.95,100,20 Z" },
-                            Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "No sales lead" } } },
-                            new Node(){ ID = "node4", Height = 60, Width = 130, LaneOffsetX = 680, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Sell to consumer" } } },
+                            new Node(){ ID = "node1", Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node1" } } },
+                            new Node(){ ID = "node2", Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node2" } } }
                         },
                     },
                     new Lane(){
+                        ID = "lane2",
                         Height = 115,
                         Header = new SwimlaneHeader(){
-                            Annotation = new ShapeAnnotation(){Content = "Marketing"}, Width=50,
+                            Annotation = new ShapeAnnotation(){Content = "Lane2"}, Width=50,
                             Style = new TextStyle()
                             {
                                     Fill = "#E7F4FF", StrokeColor = "#717171"
@@ -292,49 +290,19 @@
                         },
                         Children = new DiagramObjectCollection<Node>()
                         {
-                            new Node(){ ID = "node5", Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Create marketing campaigns" } } },
-                            new Node(){ ID = "node6", Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Marketing finds sales leads" } } }
-                        },
-                    },
-                    new Lane(){
-                        Height = 115,
-                        Header = new SwimlaneHeader(){
-                            Annotation = new ShapeAnnotation(){Content = "Sales"}, Width=50,
-                            Style = new TextStyle()
-                            {
-                                    Fill = "#E7F4FF", StrokeColor = "#717171"
-                            }
-                        },
-                        Children = new DiagramObjectCollection<Node>()
-                        {
-                            new Node(){ID = "node7", Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 60, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Sales receives lead" } } },
-                        },
-                    },
-                    new Lane(){
-                        Height = 115,
-                        Header = new SwimlaneHeader()
-                        {
-                            Annotation = new ShapeAnnotation(){Content = "Success"}, Width=50,
-                            Style = new TextStyle()
-                            {
-                                    Fill = "#E7F4FF", StrokeColor = "#717171"
-                            }
-                        },
-                        Children = new DiagramObjectCollection<Node>()
-                        {
-                            new Node(){ID = "node8", Height = 60, Width = 130, LaneOffsetX = 680, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Success helps retain consumer as a customer" } } },
+                            new Node(){ ID = "node3", Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node3" } } },
+                            new Node(){ ID = "node4", Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node4" } } }
                         },
                     }
                 }
             }
         };
+
+        //Log the number of lanes using logger
+        Logger.LogInformation("Number of swimlanes: {Count}", swimlanes[0].Lanes.Count);
+
         CreateConnector("node1", "node2");
-        CreateConnector("node2", "node3", "No");
-        CreateConnector("node2", "node6", "Yes");
-        CreateConnector("node6", "node7");
-        CreateConnector("node5", "node1");
-        CreateConnector("node4", "node7", sport: "port1", tport: "port3");
-        CreateConnector("node4", "node8");
+        //CreateConnector("node2", "node3");
     }
     // Create Nodes and Connectors for the Palette.
     private void InitPaletteModel()
