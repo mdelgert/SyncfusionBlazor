@@ -12,13 +12,13 @@
         <SfButton IsPrimary="true" OnClick="@clearDiagram">Clear</SfButton>
     </div>
     <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@addConnectors">Connectors</SfButton>
+    </div>
+    <div class="btn">
         <SfButton IsPrimary="true" OnClick="@reloadDiagram">Reload</SfButton>
     </div>
     <div class="btn">
-        <SfButton IsPrimary="true" OnClick="@addNodes">Nodes</SfButton>
-    </div>
-    <div class="btn">
-        <SfButton IsPrimary="true" OnClick="@addConnectors">Connectors</SfButton>
+        <SfButton IsPrimary="true" OnClick="@loadCustomDiagram">Custom</SfButton>
     </div>
     <br />
     <p class="pagecontent">@message</p>
@@ -84,50 +84,6 @@
     private DiagramObjectCollection<NodeBase> connectorSymbols = new DiagramObjectCollection<NodeBase>();
     [Inject] protected IJSRuntime jsRuntime { get; set; }
     [Inject] private ILogger<Index> Logger { get; set; } = default!;
-    private void clearDiagram()
-    {
-        message = "Clear Diagram";
-        swimlanes.Clear();
-        swimlanes = new DiagramObjectCollection<Swimlane>();
-        nodes.Clear();
-        nodes = new DiagramObjectCollection<Node>();
-        connectors.Clear();
-        connectors = new DiagramObjectCollection<Connector>();
-        //StateHasChanged();
-        //Diagram.RefreshDataSourceAsync().GetAwaiter().GetResult();
-        Diagram.RefreshDataSourceAsync();
-        //nodes.Clear();
-        //connectors.Clear();
-        //TODO: Clear the diagram
-    }
-
-    private void reloadDiagram()
-    {
-        message = "Reload Diagram";
-        InitDiagramModel();
-        //Diagram.RefreshDataSourceAsync();
-        //StateHasChanged();
-    }
-
-    private void addNodes()
-    {
-        message = "Add Nodes";
-        //TODO: Add the nodes
-    }
-
-    private void addConnectors()
-    {
-        message = "Add Connectors";
-        //TODO: Add the connectors
-        CreateConnector("node1", "node2");
-        CreateConnector("node3", "node4");
-    }
-
-    private void removeItem()
-    {
-        message = "Remove";
-        //TODO: Remove the item
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -611,5 +567,193 @@
     public async Task ShowHideSymbolPalette()
     {
         await jsRuntime.InvokeAsync<object>("openPalette");
+    }
+
+    // Add this class after your existing @code block or at the end of the file
+    public class DiagramDataModel
+    {
+        public class LaneModel
+        {
+            public string Id { get; set; }
+            public string Title { get; set; }
+            public int Height { get; set; } = 115;
+            public List<NodeModel> Nodes { get; set; } = new List<NodeModel>();
+        }
+
+        public class NodeModel
+        {
+            public string Id { get; set; }
+            public string Content { get; set; }
+            public double OffsetX { get; set; }
+            public double OffsetY { get; set; }
+            public int Height { get; set; } = 60;
+            public int Width { get; set; } = 130;
+        }
+
+        public string SwimlaneTitle { get; set; } = "CUSTOM DATA";
+        public List<LaneModel> Lanes { get; set; } = new List<LaneModel>();
+    }
+
+    // Add these methods to your existing @code block
+    private DiagramDataModel GetSampleDiagramData()
+    {
+        return new DiagramDataModel
+        {
+            SwimlaneTitle = "CUSTOM DATA",
+            Lanes = new List<DiagramDataModel.LaneModel>
+            {
+                new DiagramDataModel.LaneModel
+                {
+                    Id = "customLane1",
+                    Title = "Process A",
+                    Nodes = new List<DiagramDataModel.NodeModel>
+                    {
+                        new DiagramDataModel.NodeModel { Id = "customNode1", Content = "Start", OffsetX = 130, OffsetY = 65 },
+                        new DiagramDataModel.NodeModel { Id = "customNode2", Content = "Process", OffsetX = 320, OffsetY = 65 }
+                    }
+                },
+                new DiagramDataModel.LaneModel
+                {
+                    Id = "customLane2",
+                    Title = "Process B",
+                    Nodes = new List<DiagramDataModel.NodeModel>
+                    {
+                        new DiagramDataModel.NodeModel { Id = "customNode3", Content = "Evaluate", OffsetX = 130, OffsetY = 55 },
+                        new DiagramDataModel.NodeModel { Id = "customNode4", Content = "Complete", OffsetX = 320, OffsetY = 55 }
+                    }
+                }
+            }
+        };
+    }
+
+    private void clearDiagram()
+    {
+        message = "Clear Diagram";
+        swimlanes.Clear();
+        swimlanes = new DiagramObjectCollection<Swimlane>();
+        nodes.Clear();
+        nodes = new DiagramObjectCollection<Node>();
+        connectors.Clear();
+        connectors = new DiagramObjectCollection<Connector>();
+        //StateHasChanged();
+        //Diagram.RefreshDataSourceAsync().GetAwaiter().GetResult();
+        Diagram.RefreshDataSourceAsync();
+        //nodes.Clear();
+        //connectors.Clear();
+        //TODO: Clear the diagram
+    }
+
+    private void reloadDiagram()
+    {
+        message = "Reload Diagram";
+        //clearDiagram();
+        InitDiagramModel();
+        //Diagram.RefreshDataSourceAsync();
+        //StateHasChanged();
+    }
+
+    private void addConnectors()
+    {
+        message = "Add Connectors";
+        //TODO: Add the connectors
+        CreateConnector("node1", "node2");
+        CreateConnector("node3", "node4");
+    }
+
+    private void loadCustomDiagram()
+    {
+        message = "Loading Custom Diagram";
+        
+        // Clear existing data
+        //swimlanes.Clear();
+        //nodes.Clear();
+        //connectors.Clear();
+        
+        //clearDiagram();
+
+        // Get sample data
+        var diagramData = GetSampleDiagramData();
+        
+        // Create swimlane
+        var swimlane = new Swimlane
+        {
+            ID = "customSwimlane",
+            OffsetX = 345,
+            OffsetY = 165,
+            Orientation = Orientation.Horizontal,
+            Height = 250,
+            Width = 650,
+            ZIndex = 10,
+            Header = new SwimlaneHeader
+            {
+                Annotation = new ShapeAnnotation { Content = diagramData.SwimlaneTitle },
+                Height = 50,
+                Style = new TextStyle { Fill = "#E7F4FF", StrokeColor = "#CCCCCC" }
+            },
+            Phases = new DiagramObjectCollection<Phase>
+            {
+                new Phase
+                {
+                    ID = "customPhase",
+                    Header = new SwimlaneHeader
+                    {
+                        Annotation = new ShapeAnnotation { Content = "" },
+                        Height = 0
+                    },
+                    Width = 650
+                }
+            },
+            Lanes = new DiagramObjectCollection<Lane>()
+        };
+        
+        // Add lanes and nodes from the data model
+        foreach (var laneModel in diagramData.Lanes)
+        {
+            var lane = new Lane
+            {
+                ID = laneModel.Id,
+                Height = laneModel.Height,
+                ZIndex = 20,
+                Header = new SwimlaneHeader
+                {
+                    Annotation = new ShapeAnnotation { Content = laneModel.Title },
+                    Width = 50,
+                    Style = new TextStyle { Fill = "#E7F4FF", StrokeColor = "#717171" }
+                },
+                Children = new DiagramObjectCollection<Node>()
+            };
+            
+            // Add nodes to this lane
+            foreach (var nodeModel in laneModel.Nodes)
+            {
+                lane.Children.Add(new Node
+                {
+                    ID = nodeModel.Id,
+                    ZIndex = 30,
+                    Height = nodeModel.Height,
+                    Width = nodeModel.Width,
+                    LaneOffsetX = nodeModel.OffsetX,
+                    LaneOffsetY = nodeModel.OffsetY,
+                    Ports = CreatePort(),
+                    Shape = new BasicShape { Shape = NodeBasicShapes.Rectangle },
+                    Annotations = new DiagramObjectCollection<ShapeAnnotation>
+                    {
+                        new ShapeAnnotation { Content = nodeModel.Content }
+                    }
+                });
+            }
+            
+            swimlane.Lanes.Add(lane);
+        }
+        
+        swimlanes.Add(swimlane);
+        
+        // Add connectors between nodes
+        //CreateConnector("customNode1", "customNode2");
+        //CreateConnector("customNode3", "customNode4");
+        //CreateConnector("customNode2", "customNode3");
+        
+        // Refresh diagram
+        //Diagram.RefreshDataSourceAsync();
     }
 }
