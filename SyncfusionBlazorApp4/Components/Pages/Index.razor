@@ -88,8 +88,16 @@
     {
         message = "Clear Diagram";
         swimlanes.Clear();
+        swimlanes = new DiagramObjectCollection<Swimlane>();
         nodes.Clear();
+        nodes = new DiagramObjectCollection<Node>();
         connectors.Clear();
+        connectors = new DiagramObjectCollection<Connector>();
+        //StateHasChanged();
+        //Diagram.RefreshDataSourceAsync().GetAwaiter().GetResult();
+        Diagram.RefreshDataSourceAsync();
+        //nodes.Clear();
+        //connectors.Clear();
         //TODO: Clear the diagram
     }
 
@@ -97,7 +105,8 @@
     {
         message = "Reload Diagram";
         InitDiagramModel();
-        //TODO: Reload the diagram
+        Diagram.RefreshDataSourceAsync();
+        StateHasChanged();
     }
 
     private void addNodes()
@@ -111,7 +120,7 @@
         message = "Add Connectors";
         //TODO: Add the connectors
         CreateConnector("node1", "node2");
-        CreateConnector("node2", "node3");
+        CreateConnector("node3", "node4");
     }
 
     private void removeItem()
@@ -303,8 +312,8 @@
         //Log the number of lanes using logger
         Logger.LogInformation("Number of swimlanes: {Count}", swimlanes[0].Lanes.Count);
 
-        CreateConnector("node1", "node2");
-        CreateConnector("node2", "node3");
+        //CreateConnector("node1", "node2");
+        //CreateConnector("node3", "node4");
     }
     // Create Nodes and Connectors for the Palette.
     private void InitPaletteModel()
