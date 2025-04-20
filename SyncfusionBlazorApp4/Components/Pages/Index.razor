@@ -635,9 +635,12 @@
         nodes = new DiagramObjectCollection<Node>();
         connectors.Clear();
         connectors = new DiagramObjectCollection<Connector>();
+        Diagram.RefreshDataSourceAsync();
+
+        //Diagram.RefreshDataSource();
         //StateHasChanged();
         //Diagram.RefreshDataSourceAsync().GetAwaiter().GetResult();
-        Diagram.RefreshDataSourceAsync();
+        //Diagram.RefreshDataSourceAsync();
         //nodes.Clear();
         //connectors.Clear();
         //TODO: Clear the diagram
@@ -749,8 +752,8 @@
         swimlanes.Add(swimlane);
         
         // Add connectors between nodes
-        //CreateConnector("customNode1", "customNode2");
-        //CreateConnector("customNode3", "customNode4");
+        CreateConnector("customNode1", "customNode2");
+        CreateConnector("customNode3", "customNode4");
         //CreateConnector("customNode2", "customNode3");
         
         // Refresh diagram
