@@ -651,10 +651,14 @@
         {
             //Diagram.LoadDiagram(diagramString);
             //Diagram.LoadDiagramAsync(diagramString).GetAwaiter().GetResult();
-            Diagram.LoadDiagramAsync(diagramString);
+            //Diagram.LoadDiagramAsync(diagramString);
             //Diagram.RefreshDataSourceAsync();
             //StateHasChanged(); // Uncomment if you need to refresh the UI immediately
             //Logger.LogInformation("Diagram loaded successfully: {DiagramString}", diagramString);
+
+            //https://blazor.syncfusion.com/documentation/diagram/serialization
+            Logger.LogInformation("Loading diagram data...");
+            Diagram.LoadDiagramAsync(diagramString, true);
         }
         else
         {
@@ -685,8 +689,18 @@
     private void reloadDiagram()
     {
         message = "Reload Diagram";
-        //clearDiagram();
+        
+        Diagram.BeginUpdate();
+        
+        // Clear existing data
+        swimlanes.Clear();
+        nodes.Clear();
+        connectors.Clear();
+        Diagram.Clear();
+        Diagram.RefreshDataSourceAsync();
         InitDiagramModel();
+        Diagram.EndUpdateAsync();
+
         //Diagram.RefreshDataSourceAsync();
         //StateHasChanged();
     }
