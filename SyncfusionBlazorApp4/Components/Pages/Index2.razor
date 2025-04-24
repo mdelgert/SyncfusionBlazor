@@ -1,0 +1,813 @@
+﻿@page "/index2"
+@rendermode InteractiveServer
+@using Syncfusion.Blazor.Diagram
+@using Syncfusion.Blazor.Diagram.SymbolPalette
+@using System.Collections.ObjectModel
+@using Syncfusion.Blazor.Buttons
+
+<PageTitle>Diagram</PageTitle>
+<h2>Diagram</h2>
+<div class="parent">
+    <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@clearDiagram">Clear</SfButton>
+    </div>
+    <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@saveDiagram">Save</SfButton>
+    </div>
+    <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@loadDiagram">Load</SfButton>
+    </div>
+    <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@addConnectors">Connectors</SfButton>
+    </div>
+    <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@reloadDiagram">Reload</SfButton>
+    </div>
+    <div class="btn">
+        <SfButton IsPrimary="true" OnClick="@loadCustomDiagram">Custom</SfButton>
+    </div>
+    <br />
+    <p class="pagecontent">@message</p>
+</div>
+<div style="width: 100%">
+    <div style="width:240px;height:100%;float:left;">
+        <SfSymbolPaletteComponent @ref="@PaletteInstance" Height="700px" SymbolDragPreviewSize="@SymbolPreview" Palettes="@palettes" SymbolHeight="60" SymbolWidth="60" SymbolMargin="@SymbolMargin">
+        </SfSymbolPaletteComponent>
+    </div>
+    <div style="width:calc(100% - 242px);height:100%;float:left;">
+        <SfDiagramComponent @ref="@Diagram" Connectors="@connectors" Height="687px" Nodes="@nodes" Swimlanes="@swimlanes" SelectionSettings="@selectionSettings" DragDrop="DragDrop" NodeCreating="OnNodeCreating" ConnectorCreating="OnConnectorCreating">
+            <SnapSettings Constraints="@snapConstraints">
+                <HorizontalGridLines LineColor="#e0e0e0 " LineIntervals="@GridLineIntervals">
+                </HorizontalGridLines>
+                <VerticalGridLines LineColor="#e0e0e0" LineIntervals="@GridLineIntervals">
+                </VerticalGridLines>
+            </SnapSettings>
+            <ContextMenuSettings Show="true" Items="@ContextMenuItems" ShowCustomMenuOnly="true"
+                                 ContextMenuOpening="ContextMenuOpening" ContextMenuItemClicked="ContextMenuItemClicked"></ContextMenuSettings>
+        </SfDiagramComponent>
+    </div>
+</div>
+<style>
+    .ulstyle {
+        margin: 0px;
+        padding-left: 20px;
+        display: inline-block;
+    }
+
+    .list {
+        float: left;
+        line-height: 20px;
+        margin: 10px;
+        min-width: 340px;
+    }
+</style>
+
+@code {
+    private string message = "";
+    private string diagramString = "";
+    private int connectorCount = 0;
+    List<ContextMenuItem> ContextMenuItems = new List<ContextMenuItem>();
+    SnapConstraints snapConstraints = SnapConstraints.All & ~SnapConstraints.ShowLines;
+    DiagramSelectionSettings selectionSettings = new DiagramSelectionSettings() { Constraints = SelectorConstraints.All & ~SelectorConstraints.Rotate };
+    public DiagramSize SymbolPreview;
+    public SymbolMargin SymbolMargin = new SymbolMargin { Left = 15, Right = 15, Top = 15, Bottom = 15 };
+    public SfDiagramComponent Diagram;
+    public SfSymbolPaletteComponent PaletteInstance;
+    //Defines Diagram's nodes collection
+    private DiagramObjectCollection<Node> nodes = new DiagramObjectCollection<Node>();
+    //Defines Diagram's swimlane collection
+    private DiagramObjectCollection<Swimlane> swimlanes = new DiagramObjectCollection<Swimlane>();
+    //Defines Diagram's connectors collection
+    private DiagramObjectCollection<Connector> connectors = new DiagramObjectCollection<Connector>();
+    //Define palettes collection
+    private DiagramObjectCollection<Palette> palettes = new DiagramObjectCollection<Palette>();
+    // Defines palette's flow-shape collection
+    private DiagramObjectCollection<NodeBase> flowShapeSymbols = new DiagramObjectCollection<NodeBase>();
+    // Defines palette's swimlane-shape collection
+    DiagramObjectCollection<NodeBase> SwimlaneNodes = new DiagramObjectCollection<NodeBase>();
+    // Defines interval values for GridLines
+    public double[] GridLineIntervals { get; set; }
+    // Defines palette's connector collection
+    private DiagramObjectCollection<NodeBase> connectorSymbols = new DiagramObjectCollection<NodeBase>();
+    [Inject] protected IJSRuntime jsRuntime { get; set; }
+    [Inject] private ILogger<Index> Logger { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        PaletteInstance.Targets = new DiagramObjectCollection<SfDiagramComponent>
+        {
+            Diagram
+        };
+    }
+
+    protected override void OnInitialized()
+    {
+        GridLineIntervals = new double[] {
+            1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75,
+        };
+        ContextMenuItems = new List<ContextMenuItem>()
+        {
+        new ContextMenuItem(){ID="Copy", Text = "Copy", IconCss = "e-menu-icon e-icons e-copy"},
+        new ContextMenuItem(){ID="Cut",Text = "Cut", IconCss = "e-menu-icon e-icons e-cut"},
+        new ContextMenuItem(){ID="Paste",Text = "Paste", IconCss = "e-menu-icon e-icons e-paste"},
+        new ContextMenuItem(){ID="InsertLaneBefore",Text = "Insert Lane Before", IconCss="e-menu-icon e-icons e-empty"},
+        new ContextMenuItem(){ID="InsertLaneAfter",Text = "Insert Lane After", IconCss="e-menu-icon e-icons e-empty"}
+        };
+        InitDiagramModel();
+        InitPaletteModel();
+    }
+    private void ContextMenuOpening(DiagramMenuOpeningEventArgs args)
+    {
+        if (args.Items.Count > 0)
+        {
+            foreach (ContextMenuItem item in args.Items)
+            {
+                if ((Diagram.SelectionSettings.Nodes.Count + Diagram.SelectionSettings.Connectors.Count + Diagram.SelectionSettings.Swimlanes.Count +
+                Diagram.SelectionSettings.Lanes.Count + Diagram.SelectionSettings.Phases.Count) > 0)
+                {
+                    if (item.ID == "InsertLaneBefore" || item.ID == "InsertLaneAfter")
+                    {
+                        if (Diagram.SelectionSettings.Lanes.Count == 0)
+                        {
+                            args.HiddenItems.Add(item.ID);
+                        }
+                    }
+                }
+                else
+                {
+                    args.HiddenItems.Add(item.ID);
+                }
+            }
+        }
+    }
+    private void ContextMenuItemClicked(DiagramMenuClickEventArgs args)
+    {
+        if (args.Item.ID == "InsertLaneBefore" || args.Item.ID == "InsertLaneAfter")
+        {
+            if (Diagram.SelectionSettings.Lanes.Count > 0)
+            {
+                Lane lane = Diagram.SelectionSettings.Lanes[0];
+                Swimlane swimlaneObj = lane.GetParent() as Swimlane;
+                Swimlane swimlane = Diagram.GetObject(swimlaneObj.ID) as Swimlane;
+                Lane existingLane = swimlane.Lanes[0].Clone() as Lane;
+                int index = swimlane.Lanes.IndexOf(lane);
+                Lane newLane = new Lane()
+                    {
+                        Header = new SwimlaneHeader()
+                        {
+                            Annotation = new ShapeAnnotation() { Content = "Function" },
+                            Width = existingLane.Header.Width,
+                            Height = existingLane.Header.Height,
+                            Style = existingLane.Header.Style
+                        },
+                        Style = existingLane.Style,
+                        Height = existingLane.Height,
+                        Width = existingLane.Width
+                    };
+                if (swimlane.Orientation == Orientation.Horizontal)
+                {
+                    newLane.Header.Width = existingLane.Header.Width;
+                    newLane.Header.Height = existingLane.Height;
+                }
+                else
+                {
+                    newLane.Header.Width = existingLane.Width;
+                    newLane.Header.Height = existingLane.Header.Height;
+                }
+                if (args.Item.ID == "InsertLaneBefore")
+                {
+                    swimlane.Lanes.Insert(index, newLane);
+                }
+                else
+                {
+                    swimlane.Lanes.Insert(index + 1, newLane);
+                }
+                Diagram.ClearSelection();
+            }
+        }
+        else if (args.Item.ID == "Cut")
+            Diagram.Cut();
+        else if (args.Item.ID == "Copy")
+            Diagram.Copy();
+        else if (args.Item.ID == "Paste")
+            Diagram.Paste();
+    }
+    // Create Nodes and Connectors for the diagram.
+    private void InitDiagramModel()
+    {
+        swimlanes = new DiagramObjectCollection<Swimlane>()
+        {
+            new Swimlane()
+            {
+                ID = "swimlane", OffsetX = 345, OffsetY = 165,
+                Orientation = Orientation.Horizontal,
+                Height = 250,
+                Width = 650,
+                ZIndex = 10,
+                Header = new SwimlaneHeader()
+                {
+                    Annotation = new ShapeAnnotation()
+                    {
+                        Content = "DEMO"
+                    },
+                    Height = 50,
+                    Style = new TextStyle()
+                    {
+                            Fill = "#E7F4FF", StrokeColor = "#CCCCCC"
+                    }
+                },
+                Phases = new DiagramObjectCollection<Phase>()
+                {
+                    new Phase()
+                    {
+                        ID="phase",
+                        Header = new SwimlaneHeader()
+                        {
+                            Annotation = new ShapeAnnotation(){
+                                //Content = "Phase",
+                                Content = "",
+                            },
+                            //Height = 20
+                            Height = 0
+                        },
+                        Width = 650,
+                    }
+                },
+                Lanes = new DiagramObjectCollection<Lane>()
+                {
+                    new Lane(){
+                        ID = "lane1",
+                        Height = 115,
+                        ZIndex = 20,
+                        Header = new SwimlaneHeader()
+                        {
+                            Annotation = new ShapeAnnotation(){ Content = "Lane1"}, Width=50,
+                            Style = new TextStyle()
+                            {
+                                  Fill = "#E7F4FF", StrokeColor = "#717171"
+                            }
+                        },
+                        Children = new DiagramObjectCollection<Node>()
+                        {
+                            new Node(){ ID = "node1", ZIndex=30, Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node1" } } },
+                            new Node(){ ID = "node2", ZIndex=30, Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 65, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node2" } } }
+                        },
+                    },
+                    new Lane(){
+                        ID = "lane2",
+                        Height = 115,
+                        ZIndex = 20,
+                        Header = new SwimlaneHeader(){
+                            Annotation = new ShapeAnnotation(){Content = "Lane2"}, Width=50,
+                            Style = new TextStyle()
+                            {
+                                    Fill = "#E7F4FF", StrokeColor = "#717171"
+                            }
+                        },
+                        Children = new DiagramObjectCollection<Node>()
+                        {
+                            new Node(){ ID = "node3", ZIndex=30, Height = 60, Width = 130, LaneOffsetX = 130, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node3" } } },
+                            new Node(){ ID = "node4", ZIndex=30, Height = 60, Width = 130, LaneOffsetX = 320, LaneOffsetY = 55, Ports = CreatePort(), Shape = new BasicShape(){ Shape = NodeBasicShapes.Rectangle },  Annotations = new DiagramObjectCollection<ShapeAnnotation>(){ new ShapeAnnotation() { Content = "Node4" } } }
+                        },
+                    }
+                }
+            }
+        };
+
+        //Log the number of lanes using logger
+        Logger.LogInformation("Number of swimlanes: {Count}", swimlanes[0].Lanes.Count);
+
+        CreateConnector("node1", "node2");
+        CreateConnector("node3", "node4");
+    }
+    // Create Nodes and Connectors for the Palette.
+    private void InitPaletteModel()
+    {
+        palettes = new DiagramObjectCollection<Palette>();
+        SymbolPreview = new DiagramSize
+            {
+                Width = 100,
+                Height = 100
+            };
+        flowShapeSymbols = new DiagramObjectCollection<NodeBase>();
+        CreatePaletteNode(NodeFlowShapes.Process, "Process");
+        //CreatePaletteNode(NodeFlowShapes.Terminator, "Terminator");
+        //CreatePaletteNode(NodeFlowShapes.Decision, "Decision");
+        //CreatePaletteNode(NodeFlowShapes.Document, "Document");
+        //CreatePaletteNode(NodeFlowShapes.PreDefinedProcess, "Pre-Defined Process");
+        //CreatePaletteNode(NodeFlowShapes.Data, "Data");
+        //horizontal lane
+        Lane horizontalLane = new Lane()
+            {
+                ID = "HorizontalSwimlane",
+                Orientation = Orientation.Horizontal,
+                Height = 100,
+                Width = 150,
+                Style = new ShapeStyle() { StrokeColor = "#757575" },
+                Header = new SwimlaneHeader()
+                {
+                    Annotation = new ShapeAnnotation() { Content = "Function" },
+                    Style = new TextStyle() { Fill = "#E7F4FF", StrokeColor = "#757575" },
+                    Width = 50,
+                    Height = 100
+                },
+            };
+        //vertical lane
+        Lane verticalLane = new Lane()
+            {
+                ID = "VerticalSwimlane",
+                Orientation = Orientation.Vertical,
+                Height = 150,
+                Width = 100,
+                Style = new ShapeStyle() { StrokeColor = "#757575" },
+                Header = new SwimlaneHeader()
+                {
+                    Annotation = new ShapeAnnotation() { Content = "Function" },
+                    Style = new TextStyle() { Fill = "#E7F4FF", StrokeColor = "#757575" },
+                    Width = 100,
+                    Height = 50
+                },
+            };
+        //horizontal phase
+        Phase horizontalPhase = new Phase() { ID = "HorizontalPhase", Orientation = Orientation.Horizontal, Width = 80, Height = 1, Style = new ShapeStyle() { StrokeColor = "#717171", Fill = "#FFFFFF" } };
+        //vertical phase
+        Phase verticalPhase = new Phase() { ID = "VerticalPhase", Orientation = Orientation.Vertical, Width = 1, Height = 80, Style = new ShapeStyle() { StrokeColor = "#717171", Fill = "#FFFFFF" } };
+        SwimlaneNodes = new DiagramObjectCollection<NodeBase>()
+        {
+            horizontalLane,
+            //verticalLane,
+            //horizontalPhase,
+            //verticalPhase
+        };
+        connectorSymbols = new DiagramObjectCollection<NodeBase>();
+        CreatePaletteConnector("Link1", ConnectorSegmentType.Orthogonal, new DiagramPoint() { X = 40, Y = 40 });
+        //CreatePaletteConnector("Link2", ConnectorSegmentType.Orthogonal, new DiagramPoint() { X = 40, Y = 40 }, "4 4");
+        //CreatePaletteConnector("Link21", ConnectorSegmentType.Straight, new DiagramPoint() { X = 60, Y = 60 });
+        //CreatePaletteConnector("Link22", ConnectorSegmentType.Straight, new DiagramPoint() { X = 60, Y = 60 }, "4 4");
+        palettes = new DiagramObjectCollection<Palette>()
+        {
+            new Palette() {Symbols = flowShapeSymbols, Title = "Flow Shapes", ID = "Flow Shapes"},
+            new Palette() {Symbols = SwimlaneNodes, Title = "Swimlane Shapes", ID = "Swimlane Shapes"},
+            new Palette() {Symbols = connectorSymbols, Title = "Connectors", IsExpanded = true},
+    };
+    }
+    private void OnNodeCreating(IDiagramObject obj)
+    {
+        Node node = obj as Node;
+        if (node != null)
+        {
+            node.Style.StrokeColor = "#717171";
+        }
+        if (obj is Swimlane swimlane)
+        {
+            swimlane.Header.Style = new TextStyle()
+                {
+                    Fill = "#E7F4FF",
+                    StrokeColor = "#717171"
+                };
+            foreach (Phase phase in swimlane.Phases)
+            {
+                phase.Style = new ShapeStyle() { StrokeColor = "#717171", Fill = "#FFFFFF" };
+            }
+            foreach (Lane lane in swimlane.Lanes)
+            {
+                lane.Style = new ShapeStyle() { StrokeColor = "#717171", Fill = "#F9F9F9" };
+            }
+        }
+    }
+    private void OnConnectorCreating(IDiagramObject obj)
+    {
+        Connector connector = obj as Connector;
+        if (connector.ID.IndexOf("Link21") != -1)
+        {
+            connector.Type = ConnectorSegmentType.Straight;
+        }
+        else if (connector.ID.IndexOf("Link22") != -1)
+        {
+            connector.Type = ConnectorSegmentType.Straight;
+        }
+        else
+        {
+            connector.Type = ConnectorSegmentType.Orthogonal;
+        }
+        connector.Style.StrokeColor = "#717171";
+        connector.SourceDecorator.Style.StrokeColor = "#717171";
+        connector.TargetDecorator.Style.StrokeColor = "#717171";
+        connector.SourceDecorator.Style.Fill = "#717171";
+        connector.TargetDecorator.Style.Fill = "#717171";
+
+        //var existingConnectors = connectors.Where(x => x.SourceID == connector.SourceID && x.TargetID == connector.TargetID).ToList();
+        //existingConnectors.AddRange(connectors.Where(x => x.SourceID == connector.TargetID && x.TargetID == connector.SourceID).ToList());
+        //if(existingConnectors.Any(x => x.TargetID == connector.TargetID && x.SourceID == x.SourceID && x.ID != connector.ID))
+        //{
+        //    Diagram.Connectors.Remove(Diagram.Connectors.FirstOrDefault(x => x.ID == connector.ID));
+        //}
+    }
+    // Method is used to create a node for the palette.
+    private void CreatePaletteNode(NodeFlowShapes flowShape, string id)
+    {
+        string NodeID = id;
+        bool isSpace = id.Contains(" ");
+        if (isSpace)
+        {
+            NodeID = id.Replace(" ", "");
+        }
+        Node diagramNode = new Node()
+            {
+                ID = NodeID,
+                Shape = new FlowShape() { Type = Syncfusion.Blazor.Diagram.NodeShapes.Flow, Shape = flowShape },
+                Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1 },
+            };
+        if (isSpace)
+        {
+            diagramNode.Tooltip = new DiagramTooltip()
+                {
+                    Content = id,
+                };
+            diagramNode.Constraints = NodeConstraints.Default | NodeConstraints.Tooltip;
+        }
+        if (id == "Terminator" || id == "Process")
+        {
+            diagramNode.Width = 80;
+            diagramNode.Height = 40;
+        }
+        else if (id == "Decision" || id == "Document" || id == "PreDefined Process" || id == "Data")
+        {
+            diagramNode.Width = 50;
+            diagramNode.Height = 40;
+        }
+        else
+        {
+            diagramNode.Width = 50;
+            diagramNode.Height = 50;
+        }
+        double oldWidth = Convert.ToDouble(diagramNode.Width);
+        double oldHeight = Convert.ToDouble(diagramNode.Height);
+        double ratio = 100 / oldWidth;
+        diagramNode.Width = 100;
+        diagramNode.Height *= ratio;
+        flowShapeSymbols.Add(diagramNode);
+    }
+    private void DragDrop(DropEventArgs args)
+    {
+        if (args.Element != null && args.Element is Lane lane)
+        {
+            if (lane.Orientation == Orientation.Horizontal)
+            {
+                lane.Height = 100; lane.Width = 400;
+            }
+            else if (lane.Orientation == Orientation.Vertical)
+            {
+                lane.Height = 400; lane.Width = 100;
+            }
+        }
+    }
+    // used to create a Port.
+    private DiagramObjectCollection<PointPort> CreatePort()
+    {
+        DiagramObjectCollection<PointPort> defaultsPorts = new DiagramObjectCollection<PointPort>();
+        PointPort port1 = new PointPort()
+            {
+                ID = "port1",
+                Shape = PortShapes.Square,
+                Offset = new DiagramPoint() { X = 0, Y = 0.5 },
+                Visibility = PortVisibility.Connect | PortVisibility.Hover,
+                Constraints = PortConstraints.Default | PortConstraints.Draw
+            };
+        PointPort port2 = new PointPort()
+            {
+                ID = "port2",
+                Shape = PortShapes.Square,
+                Offset = new DiagramPoint() { X = 0.5, Y = 0 },
+                Visibility = PortVisibility.Connect | PortVisibility.Hover,
+                Constraints = PortConstraints.Default | PortConstraints.Draw
+            };
+        PointPort port3 = new PointPort()
+            {
+                ID = "port3",
+                Shape = PortShapes.Square,
+                Offset = new DiagramPoint() { X = 1, Y = 0.5 },
+                Visibility = PortVisibility.Connect | PortVisibility.Hover,
+                Constraints = PortConstraints.Default | PortConstraints.Draw
+            };
+        PointPort port4 = new PointPort()
+            {
+                ID = "port4",
+                Shape = PortShapes.Square,
+                Offset = new DiagramPoint() { X = 0.5, Y = 1 },
+                Visibility = PortVisibility.Connect | PortVisibility.Hover,
+                Constraints = PortConstraints.Default | PortConstraints.Draw
+            };
+        defaultsPorts.Add(port1);
+        defaultsPorts.Add(port2);
+        defaultsPorts.Add(port3);
+        defaultsPorts.Add(port4);
+        return defaultsPorts;
+    }
+    // Method is used to create a Connector for the diagram.
+    private void CreateConnector(string sourceId, string targetId, string label = default(string), bool isDashLine = false, string sport = "", string tport = "")
+    {
+        Connector diagramConnector = new Connector()
+            {
+                ID = string.Format("connector{0}", ++connectorCount),
+                ZIndex = 40,
+                SourceID = sourceId,
+                TargetID = targetId,
+                SourcePortID = sport,
+                TargetPortID = tport
+            };
+
+        if (isDashLine)
+        {
+            diagramConnector.Style = new ShapeStyle() { StrokeDashArray = "2,2" };
+        }
+        if (label != default(string))
+        {
+            var annotation = new PathAnnotation()
+                {
+                    Content = label,
+                    Style = new TextStyle() { Fill = "white" }
+                };
+            if ((sourceId == "node5" && targetId == "node6") || label == "Yes" || label == "No")
+            {
+                annotation.Height = 10;
+                annotation.Width = 15;
+            }
+            diagramConnector.Annotations = new DiagramObjectCollection<PathAnnotation>() { annotation };
+        }
+        diagramConnector.Type = ConnectorSegmentType.Orthogonal;
+        connectors.Add(diagramConnector);
+    }
+    // Method is used to create a Connector for the palette.
+    private void CreatePaletteConnector(string id, ConnectorSegmentType type, DiagramPoint targetPoint, string dasharray = null)
+    {
+        string connectorID = id;
+        bool isSpace = id.Contains(" ");
+        if (isSpace)
+        {
+            connectorID = id.Replace(" ", "");
+        }
+        Connector diagramConnector = new Connector()
+            {
+                ID = connectorID,
+                Type = type,
+                SourcePoint = new DiagramPoint() { X = 0, Y = 0 },
+                TargetPoint = targetPoint,
+                Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1, StrokeDashArray = !string.IsNullOrEmpty(dasharray) ? dasharray : string.Empty },
+                TargetDecorator = new DecoratorSettings()
+                {
+                    Shape = DecoratorShape.Arrow,
+                    Style = new ShapeStyle() { StrokeColor = "#757575", Fill = "#757575" }
+                }
+            };
+        if (isSpace)
+        {
+            diagramConnector.Tooltip = new DiagramTooltip()
+                {
+                    Content = id,
+                };
+            diagramConnector.Constraints = ConnectorConstraints.Default | ConnectorConstraints.Tooltip;
+        }
+        connectorSymbols.Add(diagramConnector);
+    }
+    public async Task ShowHideSymbolPalette()
+    {
+        await jsRuntime.InvokeAsync<object>("openPalette");
+    }
+
+    // Add this class after your existing @code block or at the end of the file
+    public class DiagramDataModel
+    {
+        public class LaneModel
+        {
+            public string Id { get; set; }
+            public string Title { get; set; }
+            public int Height { get; set; } = 115;
+            public List<NodeModel> Nodes { get; set; } = new List<NodeModel>();
+        }
+
+        public class NodeModel
+        {
+            public string Id { get; set; }
+            public string Content { get; set; }
+            public double OffsetX { get; set; }
+            public double OffsetY { get; set; }
+            public int Height { get; set; } = 60;
+            public int Width { get; set; } = 130;
+        }
+
+        public string SwimlaneTitle { get; set; } = "CUSTOM DATA";
+        public List<LaneModel> Lanes { get; set; } = new List<LaneModel>();
+    }
+
+    // Add these methods to your existing @code block
+    private DiagramDataModel GetSampleDiagramData()
+    {
+        return new DiagramDataModel
+        {
+            SwimlaneTitle = "CUSTOM DATA",
+            Lanes = new List<DiagramDataModel.LaneModel>
+            {
+                new DiagramDataModel.LaneModel
+                {
+                    Id = "customLane1",
+                    Title = "Process A",
+                    Nodes = new List<DiagramDataModel.NodeModel>
+                    {
+                        new DiagramDataModel.NodeModel { Id = "customNode1", Content = "Start", OffsetX = 130, OffsetY = 65 },
+                        new DiagramDataModel.NodeModel { Id = "customNode2", Content = "Process", OffsetX = 320, OffsetY = 65 }
+                    }
+                },
+                new DiagramDataModel.LaneModel
+                {
+                    Id = "customLane2",
+                    Title = "Process B",
+                    Nodes = new List<DiagramDataModel.NodeModel>
+                    {
+                        new DiagramDataModel.NodeModel { Id = "customNode3", Content = "Evaluate", OffsetX = 130, OffsetY = 55 },
+                        new DiagramDataModel.NodeModel { Id = "customNode4", Content = "Complete", OffsetX = 320, OffsetY = 55 }
+                    }
+                }
+            }
+        };
+    }
+
+    private void saveDiagram()
+    {
+        message = "Save Diagram";
+        diagramString = Diagram.SaveDiagram();
+
+        // Show messagebox of the diagram string
+        //jsRuntime.InvokeVoidAsync("alert", "Diagram saved successfully! \n\n" + diagramString);
+        Logger.LogInformation("Diagram saved successfully: {DiagramString}", diagramString);
+    }
+
+    private void loadDiagram()
+    {
+        message = "Load Diagram";
+        // Load the diagram from the saved string
+        if (!string.IsNullOrEmpty(diagramString))
+        {
+            //Diagram.LoadDiagram(diagramString);
+            //Diagram.LoadDiagramAsync(diagramString).GetAwaiter().GetResult();
+            //Diagram.LoadDiagramAsync(diagramString);
+            //Diagram.RefreshDataSourceAsync();
+            //StateHasChanged(); // Uncomment if you need to refresh the UI immediately
+            //Logger.LogInformation("Diagram loaded successfully: {DiagramString}", diagramString);
+
+            //https://blazor.syncfusion.com/documentation/diagram/serialization
+            Logger.LogInformation("Loading diagram data...");
+            Diagram.LoadDiagramAsync(diagramString, true);
+        }
+        else
+        {
+            Logger.LogWarning("No diagram data to load.");
+        }
+    }
+
+    private void clearDiagram()
+    {
+        message = "Clear Diagram";
+        swimlanes.Clear();
+        swimlanes = new DiagramObjectCollection<Swimlane>();
+        nodes.Clear();
+        nodes = new DiagramObjectCollection<Node>();
+        connectors.Clear();
+        connectors = new DiagramObjectCollection<Connector>();
+        Diagram.RefreshDataSourceAsync();
+        
+        //Diagram.RefreshDataSource();
+        //StateHasChanged();
+        //Diagram.RefreshDataSourceAsync().GetAwaiter().GetResult();
+        //Diagram.RefreshDataSourceAsync();
+        //nodes.Clear();
+        //connectors.Clear();
+        //TODO: Clear the diagram
+    }
+
+    private void reloadDiagram()
+    {
+        //https://blazor.syncfusion.com/documentation/diagram-classic/nodes/nodes
+        message = "Reload Diagram";
+        
+        Diagram.BeginUpdate();
+
+        // Clear existing data
+        swimlanes.Clear();
+        nodes.Clear();
+        connectors.Clear();
+        Diagram.Clear();
+        Diagram.RefreshDataSourceAsync();
+        InitDiagramModel();
+        Diagram.EndUpdateAsync();
+
+        //Diagram.RefreshDataSourceAsync();
+        //StateHasChanged();
+    }
+
+    private void addConnectors()
+    {
+        message = "Add Connectors";
+        //TODO: Add the connectors
+        CreateConnector("node1", "node2");
+        CreateConnector("node3", "node4");
+    }
+
+    private void loadCustomDiagram()
+    {
+        message = "Loading Custom Diagram";
+        
+        // Clear existing data
+        //swimlanes.Clear();
+        //nodes.Clear();
+        //connectors.Clear();
+        
+        //clearDiagram();
+
+        // Get sample data
+        var diagramData = GetSampleDiagramData();
+        
+        // Create swimlane
+        var swimlane = new Swimlane
+        {
+            ID = "customSwimlane",
+            OffsetX = 345,
+            OffsetY = 165,
+            Orientation = Orientation.Horizontal,
+            Height = 250,
+            Width = 650,
+            ZIndex = 10,
+            Header = new SwimlaneHeader
+            {
+                Annotation = new ShapeAnnotation { Content = diagramData.SwimlaneTitle },
+                Height = 50,
+                Style = new TextStyle { Fill = "#E7F4FF", StrokeColor = "#CCCCCC" }
+            },
+            Phases = new DiagramObjectCollection<Phase>
+            {
+                new Phase
+                {
+                    ID = "customPhase",
+                    Header = new SwimlaneHeader
+                    {
+                        Annotation = new ShapeAnnotation { Content = "" },
+                        Height = 0
+                    },
+                    Width = 650
+                }
+            },
+            Lanes = new DiagramObjectCollection<Lane>()
+        };
+        
+        // Add lanes and nodes from the data model
+        foreach (var laneModel in diagramData.Lanes)
+        {
+            var lane = new Lane
+            {
+                ID = laneModel.Id,
+                Height = laneModel.Height,
+                ZIndex = 20,
+                Header = new SwimlaneHeader
+                {
+                    Annotation = new ShapeAnnotation { Content = laneModel.Title },
+                    Width = 50,
+                    Style = new TextStyle { Fill = "#E7F4FF", StrokeColor = "#717171" }
+                },
+                Children = new DiagramObjectCollection<Node>()
+            };
+            
+            // Add nodes to this lane
+            foreach (var nodeModel in laneModel.Nodes)
+            {
+                lane.Children.Add(new Node
+                {
+                    ID = nodeModel.Id,
+                    ZIndex = 30,
+                    Height = nodeModel.Height,
+                    Width = nodeModel.Width,
+                    LaneOffsetX = nodeModel.OffsetX,
+                    LaneOffsetY = nodeModel.OffsetY,
+                    Ports = CreatePort(),
+                    Shape = new BasicShape { Shape = NodeBasicShapes.Rectangle },
+                    Annotations = new DiagramObjectCollection<ShapeAnnotation>
+                    {
+                        new ShapeAnnotation { Content = nodeModel.Content }
+                    }
+                });
+            }
+            
+            swimlane.Lanes.Add(lane);
+        }
+        
+        swimlanes.Add(swimlane);
+        
+        // Add connectors between nodes
+        CreateConnector("customNode1", "customNode2");
+        CreateConnector("customNode3", "customNode4");
+        //CreateConnector("customNode2", "customNode3");
+        
+        // Refresh diagram
+        //Diagram.RefreshDataSourceAsync();
+    }
+}
